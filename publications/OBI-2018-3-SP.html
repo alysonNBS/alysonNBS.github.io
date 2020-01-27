@@ -1,0 +1,327 @@
+<article>
+
+<b><i> Este artigo ainda esta em desenvolvimento e será completado nos próximos dias.</i></b>
+
+<p>No dia 25/08/2018, último sábado, foi realizado a fase final da OBI. E eu tive a honra de poder participar dela e desejo compartilhar essa experiência.</p>
+
+<p>A prova nível Sênior foi consideravelmente fácil. Haviam 2 problemas fáceis, bastando apenas conhecimento de programação básica e um pouco de raciocínio, e 3 problemas médios, onde cada um requisitava um pouco de conhecimento específico. Um destes últimos requeria um pouco mais de afinidade com a matemática e aplicação de programação dinâmica, outro tratava de ordenação em O(nlgn) e uso de busca binária, opcionalmente, e para último era necessário aplicação de árvores de segmentos.</p>
+
+<p>Bem, vamos aos problemas:</p>
+
+<ul>
+<li>Cinco</li>
+<li>Muro</li>
+<li>Baldes</li>
+<li>Maximin</li>
+<li>Bolas</li>
+</ul>
+
+<p>Vamos aborda-los por ordem crescente de dificuldade.</p>
+
+<h1>Bolas</h1>
+
+<p>Estranhamente, o último problema foi o mais fácil da prova.</p>
+
+<p>Este problema consistia de uma sequência de 8 bolas numeradas com algarismos de 0 a 9 que eram apresentados em uma certa ordem e deveria receber como saída apenas a informação se existe alguma configuração em que não houvessem duas bolas vizinhas com os mesmos algarismos. De forma mais rigorosa, podemos definir o problema da seguinte maneira: será apresentada uma sequência de oito inteiros <b>B<sub>i</sub></b>, <b>1 &le; i &le; 8</b>, representando os números impressos em cada bola da sequência e o programa deverá apresentar o caractere 'S' (sem aspas) como saída se existir uma alguma configuração onde <b>B<sub>i-1</sub> &ne; B<sub>i</sub> &ne; B<sub>i+1</sub></b>, para <b>2 &le; i &le; 7</b> ou o caractere 'N' caso contrário. O fato do numero de bolas ser fixo (e também pequeno) e das bolas serem numeradas apenas de 0 a 9 ajudou bastante. Imagine o seguinte: se existem 8 casas e eu posso move as bolas como eu quiser, quando não será possível deixa-las sem vizinhos com mesmas numerações? A resposta é simples, quando algum dos números aparecer 5 ou mais vezes na sequência, pois nessa situação esse mesmo número terá de ocupar pelo menos duas casas vizinhas.</p>
+
+<p>Observe esses exemplos para facilitar o seu entendimento.</p>
+
+<b><i>Será colocada imagens com exemplos de 4 e 5 números se repetindo</i></b>
+
+<p>Vamos ao código: </p>
+
+<pre><code>
+#include &lt;iostream&gt; // cin e cout
+using namespace std;
+
+int main() {
+    int bola;              // usaremos apenas uma variável pois não precisamos usar o valor mais de uma vez
+    int numeros[10];       // numeros[i] representa o número de vezes que i apareceu
+    bool impossivel=false; // vamos considerar primeiro que é possível e testaremos se é impossível
+
+
+    for(int i=0; i<10; i++) numeros[i] = 0;
+
+    for(int i=0; i<8; i++) {
+        cin >> bola;
+        numeros[bola]++;
+    }
+
+    // checo se algum dos números aparece mais de 4 vezes na sequência
+    for(int i=0; i<10; i++)
+        if(numeros[i] > 4)
+            impossivel = true;
+    
+    cout << (impossivel ? 'N' : 'S') << endl;
+
+    return 0;
+}
+</code></pre>
+
+<h1>Cinco</h1>
+
+<p>O primeiro problema da prova é, em geral, fácil. E esse ano não foi exceção.</p>
+
+<p>Neste problema, nosso programa deveria receber um número, com um tamanho informado, não múltiplo 5 e informar o maior número múltiplo de 5 que é possível fazer mudando apenas dois algarismos de posições (uma <b>única</b> troca de algarismos). Se não for possível fazer isso, basta imprimir -1. Como uma facilidade a mais, o problema informa os algarismos separados por um espaço. Vamos pensar e lembrar o que sabemos sobre os números que são múltiplos de 5. Vamos lista alguns deles para que você relembre: 0, 5, 10, 15, 20, 25, 30... Notou alguma coisa? Isso mesmo, todo múltiplo de 5 é terminado em 0 ou 5. Portanto, nós já conhecemos a condição que diz se é possível ou não termos um número múltiplo de 5, basta olhar se ele possui ao menos um algarismo 0 ou 5. Agora temos que resolver a segunda parte do parte do problema, qual é o maior número que podemos formar seguindo essas restrições? Note primeiramente que, como podemos mover apenas dois algarismos, necessariamente nós devemos mover o algarismo das unidades, o qual é garantido não ser 5 nem 0. Bom, mas como maximizar o número sabendo disso? É simples, considere o algarismo das unidades <b>u</b>, então esse algarismo <b>u</b> deverá ocupar a primeira posição, da esquerda para a direita, que tiver um valor menor do que a dele mesmo. Para facilitar podemos otimizar nosso código, podemos separar em dois casos: <b> 5 < u &le; 9 </b> ou <b> 0 < u < 5 </b>. No primeiro caso, nos temos que <b>u</b> pode ser trocado tanto com o primeiro valor que encontrarmos de 0 ou 5 em nosso número, já no segundo caso, ele deve ser trocado com o primeiro 0 encontrado e, caso nem exista nenhum 0, ele deve ser trocado com o ultimo 5 encontrado. Se você não conseguiu entender o porquê disso, sugiro que estude sistemas de numeração para tentar compreender melhor o que cada algarismo significa em sua posição.</p>
+
+<p>Veja os exemplos a seguir:</p>
+
+<b><i>Será colocado alguns exemplos aqui</i></b>
+
+<p>Chega de conversa. Veja uma solução a seguir:</p>
+
+<pre><code>
+#include &lt;iostream&gt; // cin e cout
+using namespace std;
+
+#define min(a, b) (a&lt;b ? a : b)
+#define MAXN 1000
+#define INFINITO 0x3f3f3f3f
+
+int main() {
+    int N;                    // tamanho do número
+    int algarismo[MAXN];      // número informado, salvando um algarismo por posição
+    int primeiro_0;           // única posição que temos interesse em conhecer do algarismo 0
+    int primero_5, ultimo_5;  // posições que temos interesse em saber com relação ao algarismo 5
+    bool possivel=false;      // vamos considerar inicialmente que é impossível montar o número e marcaremos como possível caso isso ocorra
+
+    // a posição dos 0 e 5 é, inicialmente, considerada INFINITA, pois utilizamos o mínimo entre as posições destes
+    primeiro_0 = primeiro_5 = ultimo_5 = INFINITO;
+
+    cin >> N;
+    
+    for(int i=0; i&lt;N; i++) {
+        int D;
+        cin >> D;
+
+        algarismo[i] = D;
+
+        // analisamos D para saber avaliar se ele é um 0 ou um 5
+        switch(D) {
+            case 0:
+                possivel = true;
+
+                if(primeiro_0 == INFINITO) primeiro_0 = i;
+                break;
+
+            case 5:
+                possivel = true;
+
+                if(primeiro_5 == INFINITO) primeiro_5 = i;
+                ultimo_5 = i;
+                break;
+        }
+    }
+
+
+    if(possivel) {
+        int posicao_de_troca;
+
+
+        // realizamos a escolha do algarismo que deve ser trocado conforme planejado na ideia de maximizar o valor do numero
+        if(algarismo[N-1] > 5) posicao_de_troca = min(primeiro_0, primeiro_5);
+        else posicao_de_troca = (primeiro_0 != INFINITO ? primeiro_0 : ultimo_5);
+
+
+        // realiza a troca dos algarismos
+        int aux = algarismo[ posicao_de_troca ];
+        algarismo[ posicao_de_troca ] = algarismo[N-1];
+        algarismo[N-1] = aux;
+
+
+        cout << algarismo[0];
+        for(int i=1; i&lt;N; i++) cout << " " << algarismo[i];
+        cout << endl;
+    }
+    else cout << -1 << endl;
+
+
+    return 0;
+}
+</code></pre>
+
+<h1>Muro</h1>
+
+<p>O primeiro problema da prova onde havia informações sobre os casos de testes. Não pra menos, pequenos detalhes de implementação podiam fazer grande diferença no tempo de resposta e, para quem não enxergasse a relação matemática, era possível calcular todas as possibilidades para valores pequenos.</p>
+
+<p>Nesta questão, deveríamos apenas escrever um programa que informasse o número de maneiras de se construir uma mureta de altura 2 e largura <b>N</b> usando os dois tijolos a seguir:</p>
+
+<i> Imagem das peças a ser adicionado </i>
+
+<p>Existem 3 códigos esperados nessa questão:</p>
+<ol>
+<li> o que usa força bruta e calcula todas as possibilidades (complexidade aproximada de O(3<sup>N</sup>))(funciona para N &le; 16); </li>
+<li> o que aplica a fórmula recursiva para calcular o número de possibilidades (com complexidade aproximada de O(2<sup>N</sup>))(funciona para N &le; 34, talvez até para N = 35); </li>
+<li> o que aplica o anterior com Programação Dinâmica (com complexidade de O(N))(funciona para N < 10<sup>8</sup>, em geral N < 10<sup>7</sup>, mas faremos apenas para N &le; 10<sup>4</sup>, pois é o pedido pelo problema).
+</ol>
+
+<p><b>1)</b> O método por força bruta possui duas variações nesse problema: desconstruir o muro contando as possibilidades ou construir todos os muro possíveis. Irei abordar apenas a primeira variação, até porque ela ajudará a entender o caminho para se chegar na solução completa. O leitar pode tentar montar o código da segunda variação com base no que será abordado na primeira.</p>
+
+<p>Como podemos desconstruir esta mureta? Bom, a própria prova nos mostra 7 tipos de blocos que auxiliam nessa ideia, veja-os numerados a seguir:</p>
+
+<b><i>Colocar uma imagem dos blocos numerados</i></b>
+
+<p>Como a própria imagem pode te induzir a pensar, quando falta apenas uma unidade de comprimento para completar a mureta, possuímos apenas uma possibilidade (usar a peça 1). Se você prestar bastante atenção, quando faltam duas unidades de comprimento, temos 5 possibilidades, pois podemos usar as peças 2, 3, 4, 5 ou duas peças 1, mas, se iremos desconstruir o muro, tenha em mente que a combinação de duas peças 1 será computada quando fizermos a possibilidade de faltar uma unidade de comprimento duas vezes e não quando removermos duas unidades de comprimento. Portanto, o fato de faltarem duas unidades de comprimento, implicara que temos 4 possibilidades (usar a peça 2, 3, 4 ou 5). Utilizando a mesma ideia para quando faltar 3 unidades de comprimento, teremos um aumento de mais 2 possibilidades (usar a peça 6 ou 7).</p>
+
+<p>Sabendo dessas informações, é fácil fazer nosso código brute force. Veja-o:</p>
+
+<pre><code>
+#include &lt;iostream&gt;
+using namespace std;
+
+#define CONSTANTE 1000000007
+
+typedef long long ll;
+
+// f é a função que retorna o número de muretas possíveis para um comprimento n
+ll f(int n) {
+    // repostas que já conhecemos e servem de base da recursão
+    if(n&lt;0) return 0;
+    if(n==1 || n == 0) return 1;
+
+
+    ll resposta=0;
+
+    // existe 1 possibilidade de repor a peça se removermos uma coluna do muro (peça 1)
+    resposta += f(n-1) % CONSTANTE;
+    // existem 4 possibilidades de repor a peça se removermos duas colunas do muro (peças 2, 3, 4 e 5)
+    // veja que a possibilidade de usar duas peças 1 já será calculada na chamada acima
+    resposta += f(n-2) % CONSTANTE;
+    resposta += f(n-2) % CONSTANTE;
+    resposta += f(n-2) % CONSTANTE;
+    resposta += f(n-2) % CONSTANTE;
+    // existem 2 possibilidades de repor a peça se removermos três colunas do muro (peças 6 e 7)
+    // note novamente que as combinações das demais peças são calculadas nas chamadas anteriores
+    resposta += f(n-3) % CONSTANTE;
+    resposta += f(n-3) % CONSTANTE;
+
+
+    return resposta;
+}
+
+int main() {
+    int N;
+    cin >> N;
+
+    cout << f(N) << endl;
+
+    return 0;
+}
+</code></pre>
+
+<p> Observe que eu deixei bem explicito a ideia de serem 4 possibilidades quando temos N-2 e de serem 2 para N-3. Em algumas linguagens de programação isso poderia ser interpretado como quatro chamadas de f(n-2) e duas de f(n-3), mas o compilador C/C++ é inteligente e ele otimiza nosso código tornando nossa função algo mais parecido com isso:</p>
+
+<pre><code>
+
+ll f(int n) {
+    if(n&lt;0) return 0;
+    if(n==1 || n == 0) return 1;
+
+    ll resposta=0;
+
+    resposta += f(n-1) % CONSTANTE;
+    resposta += 4*f(n-2) % CONSTANTE;
+    resposta += 2*f(n-3) % CONSTANTE;
+
+    return resposta;
+}
+</code></pre>
+
+<p>É provável que seja algo ainda mais otimizado, mas não entraremos em detalhes, estou mostrando isso apenas para que saiba que o código feito deve servir para valores bem próximos da solução <b>(2)</b>, mas que em outras linguagens é provável que usar o código como o apresentado funcione apenas até <b>N &le; 16.</b></p>
+
+<p><b>2)</b> Se olharmos bem para esse último bloco de código, é possível ver a lei de formação desse muro. Eis ela:</p>
+
+f(n) = { 0, se n < 0; 1, se n &isin; {0,1}; 2f(n-3) + 4f(n-2) + f(n-1), se n > 1}
+
+<p>Sem mais delongas, the code:</p>
+
+<pre><code>
+#include &lt;iostream&gt;
+using namespace std;
+
+#define CONSTANTE 1000000007
+
+typedef long long ll;
+
+// f é a função que retorna o número de muretas possíveis para um comprimento n
+ll f(int n) {
+    if(n&lt;0) return 0;
+    if(n==1 || n == 0) return 1;
+
+    return ( 2*f(n-3) + 4*f(n-2) + f(n-1) ) % CONSTANTE ;
+}
+
+int main() {
+    int N;
+    cin >> N;
+
+    cout << f(N, memo) << endl;
+
+    return 0;
+}
+</code></pre>
+
+<p><b>3)</b> A programação dinâmica fará seu papel mais fundamental nesse problema: memorizar. Veja o código que implementa solução <b>(2)</b> com PD pelo método top down (note que a única diferença é que adicionamos um array para memorizar resultados da nossa arvore de recurção e ignoramos o fato de n&lt;0):</p>
+
+<pre><code>
+#include &lt;iostream&gt;
+using namespace std;
+
+#define CONSTANTE 1000000007
+#define MAXN 10001
+
+typedef long long ll;
+
+// f é a função que retorna o número de muretas possíveis para um comprimento n
+ll f(int n, ll memo[]) {
+    if(memo[n] != -1)
+        return memo[N];
+    return memo[n] = ( 2*f(n-3, memo) + 4*f(n-2, memo) + f(n-1, memo)) % CONSTANTE ;
+}
+
+int main() {
+    int N;
+    ll memo[MAXN];
+
+    cin >> N;
+
+    // marcando todos os termos da memorização com um valor que indica que ele não foi calculado
+    for(int i=4; i<=N; i++) memo[i] = -1;
+
+    // bases da PD
+    memo[0] = 1;
+    memo[1] = 1;
+    memo[2] = 5;
+
+    cout << f(N, memo) << endl;
+
+    return 0;
+}
+</code></pre>
+
+<p> É um bom execício ao leitor modificar o código acima para ter fazer a solução bottom up. Fica como desafio ao leitor fazer o código que solucione esse problema para N próximo de 10<sup>8</sup>, considerando que o computador tem a limitação de memória de usar um vetor de memorização de no máximo 10<sup>6</sup> posições. (Dica: implemente o método bottom up e veja que você precisa usar bem menos da memória do que estamos usando)</p>
+
+<h1>Maximin</h1>
+
+<p>Foi difícil decidir entre qual problema deveria ser o mais difícil, apesar deste problema envolver ordenação em O(nlgn) (e também busca binária, mas isso fica pra mais tarde haha ;D), o fato de termos uma função pronta para fazer isso e deste assunto ser, geralmente, abordado antes de estruturas de dados, deixou esse problema com a segunda colocação.</p>
+
+<b><i>Será Desenvolvido durante a semana</i></b>
+
+<h1>Baldes</h1>
+
+<p>Sem sombra de dúvidas o problema mais técnica da prova. Era necessário o conhecimento de árvore de segmentos e aplicações para conseguir pontuação máxima.</p>
+
+<p>A questão consistia de um existirem <b>N</b> baldes, inicialmente cada um deles possui uma bola de peso <b>P<sub>i</sub></b>, para <b>1 &le; i &le; N </b>, depois seriam realizadas <b>M</b> operações. Uma operação pode ser do tipo 1: inserir uma bola com peso <b>P</b> no balde <b>I</b>; ou do tipo 2: imprimir a maior diferença absoluta entre o peso de duas bolas pertencentes a baldes distintos no intervalo <b>[A,B]</b>.</p>
+
+<p>Além disso, a questão dava informações sobre dois conjuntos de teste, dando a entender que eram esperadas, assim como nos últimos dois problemas, três possíveis soluções:</p>
+
+<ol>
+<li> por força bruta em O(mn<sup>2</sup>); </li>
+<li> por força bruta com otimizações em O(nm); </li>
+<li> usando Segment Tree em O(mlgn). </li>
+</ol>
+
+
+<b><i>O restante será desenvolvido durante a semana</i></b>
+
+</article>
