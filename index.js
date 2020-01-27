@@ -6,5 +6,6 @@ request.responseType = "json";
 request.send();
 
 request.addEventListener("readystatechange", function() {
-    console.log(request.readyState);
+    if(request.readyState == 4 && request.status == 200)
+        console.log(request.response);
 });
